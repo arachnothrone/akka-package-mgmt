@@ -4,7 +4,13 @@ import akka.actor.{ActorSystem, Props}
 import akka.persistence._
 //import webs.WebServer
 
-case class Cmd(data: String)
+sealed trait PkgStatus
+case object Accepted    extends PkgStatus
+case object Shipped     extends PkgStatus
+case object InTransit   extends PkgStatus
+case object Delivered   extends PkgStatus
+//case class PkgUpdateCmd(data: String)
+case class PkgUpdateCmd(data: PkgStatus)
 case class Evt(data: String)
 
 case class ExampleState(events: List[String] = Nil) {
@@ -21,7 +27,7 @@ class ExamplePersistentActor extends PersistentActor {
     def updateState(event: Evt): Unit =
         state = state.updated(event)
 
-    def numEvents =
+    def numEvents: Int =
         state.size
 
     val receiveRecover: Receive = {
@@ -30,8 +36,8 @@ class ExamplePersistentActor extends PersistentActor {
     }
 
     val receiveCommand: Receive = {
-        case Cmd(data) =>
-            persist(Evt(s"${data}-${numEvents}")) { event =>
+        case PkgUpdateCmd(data) =>
+            persist(Evt(s"$data-$numEvents")) { event =>
                 updateState(event)
                 context.system.eventStream.publish(event)
             }
@@ -44,15 +50,19 @@ class ExamplePersistentActor extends PersistentActor {
 object MainApp extends App {
     //WebServer.startServer("localhost", port = 8080)
 
+
     val system = ActorSystem("example")
     val persistentActor = system.actorOf(Props[ExamplePersistentActor], "persistentActor-4-scala")
+    val persistentActor2 = system.actorOf(Props[ExamplePersistentActor], "actor-2")
 
-    persistentActor ! Cmd("foo")
-    persistentActor ! Cmd("baz")
-    persistentActor ! Cmd("bar")
+    persistentActor ! PkgUpdateCmd(Accepted)
+    persistentActor ! PkgUpdateCmd(Shipped)
+    persistentActor ! PkgUpdateCmd(InTransit)
     persistentActor ! "snap"
-    persistentActor ! Cmd("buzz")
+    persistentActor ! PkgUpdateCmd(Delivered)
     persistentActor ! "print"
+    persistentActor2 ! PkgUpdateCmd(Accepted)
+    //persistentActor2 ! "print"
 
     Thread.sleep(10000)
     system.terminate()
