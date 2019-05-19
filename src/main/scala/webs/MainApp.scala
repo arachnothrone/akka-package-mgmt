@@ -5,13 +5,23 @@ import akka.persistence._
 //import webs.WebServer
 
 sealed trait PkgStatus
+case object Init        extends PkgStatus
 case object Accepted    extends PkgStatus
 case object Shipped     extends PkgStatus
 case object InTransit   extends PkgStatus
 case object Delivered   extends PkgStatus
 //case class PkgUpdateCmd(data: String)
 case class PkgUpdateCmd(data: PkgStatus)
+
+sealed trait Pkg {
+    var pkgId: Int = 0
+    var pkgWeight: Double = 0.0
+    var pkgName: String = ""
+    var pkgState: PkgStatus = Init
+}
+
 case class Evt(data: String)
+//case class Evt(data: Pkg)
 
 case class ExampleState(events: List[String] = Nil) {
     def updated(evt: Evt): ExampleState = copy(evt.data :: events)
@@ -29,6 +39,7 @@ class ExamplePersistentActor extends PersistentActor {
 
     def numEvents: Int =
         state.size
+    //def pkgId(x: Int): Int = x
 
     val receiveRecover: Receive = {
         case evt: Evt                                 => updateState(evt)
@@ -37,7 +48,9 @@ class ExamplePersistentActor extends PersistentActor {
 
     val receiveCommand: Receive = {
         case PkgUpdateCmd(data) =>
-            persist(Evt(s"$data-$numEvents")) { event =>
+//            var e: Pkg
+//            e.pkgId = 2
+            persist(Evt(s"$data-$numEvents")) { event =>    //persist(Evt(s"$data-$numEvents")) { event =>
                 updateState(event)
                 context.system.eventStream.publish(event)
             }
@@ -53,7 +66,7 @@ object MainApp extends App {
 
     val system = ActorSystem("example")
     val persistentActor = system.actorOf(Props[ExamplePersistentActor], "persistentActor-4-scala")
-    val persistentActor2 = system.actorOf(Props[ExamplePersistentActor], "actor-2")
+    //val persistentActor2 = system.actorOf(Props[ExamplePersistentActor], "actor-2")
 
     persistentActor ! PkgUpdateCmd(Accepted)
     persistentActor ! PkgUpdateCmd(Shipped)
@@ -61,7 +74,7 @@ object MainApp extends App {
     persistentActor ! "snap"
     persistentActor ! PkgUpdateCmd(Delivered)
     persistentActor ! "print"
-    persistentActor2 ! PkgUpdateCmd(Accepted)
+    //persistentActor2 ! PkgUpdateCmd(Accepted)
     //persistentActor2 ! "print"
 
     Thread.sleep(10000)
