@@ -2,23 +2,26 @@ package webs
 
 import akka.actor.{ActorSystem, Props}
 import akka.persistence._
+//import webs.typedefs
+
 //import webs.WebServer
 
-sealed trait PkgStatus
-case object Init        extends PkgStatus
-case object Accepted    extends PkgStatus
-case object Shipped     extends PkgStatus
-case object InTransit   extends PkgStatus
-case object Delivered   extends PkgStatus
+//sealed trait PkgStatus
+//case object Init        extends PkgStatus
+//case object Accepted    extends PkgStatus
+//case object Shipped     extends PkgStatus
+//case object InTransit   extends PkgStatus
+//case object Delivered   extends PkgStatus
+
 //case class PkgUpdateCmd(data: String)
 case class PkgUpdateCmd(data: PkgStatus)
 
-sealed trait Pkg {
-    var pkgId: Int = 0
-    var pkgWeight: Double = 0.0
-    var pkgName: String = ""
-    var pkgState: PkgStatus = Init
-}
+//sealed trait Pkg {
+//    var pkgId: Int = 0
+//    var pkgWeight: Double = 0.0
+//    var pkgName: String = ""
+//    var pkgState: PkgStatus = Init
+//}
 
 case class Evt(data: String)
 //case class Evt(data: Pkg)
