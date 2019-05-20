@@ -8,5 +8,5 @@ case object InTransit   extends PkgStatus
 case object Delivered   extends PkgStatus
 
 object typedefs {
-    type Pkg = (Int, PkgStatus)
+    type Pkg = (String, PkgStatus)
 }
