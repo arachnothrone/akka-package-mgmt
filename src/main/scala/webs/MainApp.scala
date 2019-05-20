@@ -83,7 +83,7 @@ class RootActor() extends PersistentActor{
 // ---------------------------------------------
 
 object MainApp extends App {
-    //WebServer.startServer("localhost", port = 8080)
+    WebServer.startServer("localhost", port = 8080)
 
     val system = ActorSystem("example")
 
