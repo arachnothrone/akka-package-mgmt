@@ -5,10 +5,11 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, ResponseEntity, Statu
 import akka.http.scaladsl.server.{HttpApp, Route}
 import webs.MainApp.system
 // Server definition
-object WebServer extends HttpApp {
+object WebServer extends HttpApp with EventMarshaller {
     val system = ActorSystem("example")
     val persistentActor = system.actorOf(Props[ExamplePersistentActor], "persistentActor-4-scala")
-    def getInfo(): String = "lklkjlklkj"
+    def getInfo():String = "dfj lkj " // {persistentActor ! "print"} = "lklkjlklkj"
+    def excCmd(cmd: String) = persistentActor ! PkgSetName(cmd)
     override def routes: Route =
         path("hello") {
             get {
@@ -37,6 +38,18 @@ object WebServer extends HttpApp {
                 }
             }
 
-        }
+        } ~
+          {
+              pathPrefix("three"/"setname"/Segment){cmd =>{
+                  get{
+                      pathEndOrSingleSlash{
+                          //onSuccess(getInfo()){ info =>
+                          {  complete(excCmd(cmd))
+                          }
+                      }
+                  }
+              }}
+
+          }
 }
 

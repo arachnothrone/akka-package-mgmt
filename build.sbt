@@ -32,7 +32,9 @@ libraryDependencies ++= Seq(
     // persistence
     "com.typesafe.akka"          %% "akka-persistence" % "2.6.0-M1",  //"2.5.22", 
     "org.iq80.leveldb"            % "leveldb"          % "0.7",
-    "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8"
+    "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
+    "com.typesafe.play" %% "play-ws-standalone-json"       % "1.1.8",
+    "de.heikoseeberger" %% "akka-http-play-json"   % "1.17.0"
     ///"com.typesafe.akka" % "akka-http-testkit_2.12" % "10.1.8" % "test",
     // the next one add only if you need Spray JSON support
     ///"com.typesafe.akka" % "akka-http-spray-json-experimental_2.12.0-RC2" % "2.4.11"

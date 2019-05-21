@@ -61,6 +61,7 @@ class ExamplePersistentActor() extends PersistentActor {
         case "print" => println(state)
         case "printLast" => println(s"PackageId = ${state.lst._1}, PackageStatus = ${state.lst._2}")
         case "setName" => pkgId = "sdf"
+        case "testcmd" => pkgId = "dddddd"
     }
 
 }
