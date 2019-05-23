@@ -1,6 +1,7 @@
 package webs
 
 import akka.actor.{ActorSystem, Props}
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, ResponseEntity, StatusCodes}
 import akka.http.scaladsl.server.{HttpApp, Route}
 import webs.MainApp.system
@@ -38,18 +39,18 @@ object WebServer extends HttpApp with EventMarshaller {
                 }
             }
 
-        } ~
-          {
-              pathPrefix("three"/"setname"/Segment){cmd =>{
-                  get{
-                      pathEndOrSingleSlash{
-                          //onSuccess(getInfo()){ info =>
-                          {  complete(excCmd(cmd))
-                          }
-                      }
-                  }
-              }}
-
-          }
+        } //~
+//          {
+//              pathPrefix("three"/"setname"/Segment){cmd =>{
+//                  get{
+//                      pathEndOrSingleSlash{
+//                          //onSuccess(getInfo()){ info =>
+//                          {  complete(excCmd(cmd))
+//                          }
+//                      }
+//                  }
+//              }}
+//
+//          }
 }
 

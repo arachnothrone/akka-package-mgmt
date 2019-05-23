@@ -84,7 +84,7 @@ class RootActor() extends PersistentActor{
 // ---------------------------------------------
 
 object MainApp extends App {
-    WebServer.startServer("localhost", port = 8080)
+    //WebServer.startServer("localhost", port = 8080)
 
     val system = ActorSystem("example")
 
@@ -97,7 +97,7 @@ object MainApp extends App {
     persistentActor ! PkgUpdateCmd(InTransit)
     persistentActor ! "snap"
     persistentActor ! PkgUpdateCmd(Delivered)
-    persistentActor ! "print"
+    persistentActor.tell("print", persistentActor)
     persistentActor ! "printLast"
     //persistentActor2 ! PkgUpdateCmd(Accepted)
     //persistentActor2 ! "print"
