@@ -18,24 +18,24 @@ case class AddPkg(data: String)     // for RootActor
 
 //case class Evt(data: String)
 case class Evt(data: Pkg)
-case class EvtR(data: List[ExamplePersistentActor])
+case class EvtR(data: List[PersistentPackage])
 // ---------------------- events -------------
-case class ExampleState(events: List[Pkg] = Nil) {
-    def updated(evt: Evt): ExampleState = copy(evt.data :: events)
+case class PackageState(events: List[Pkg] = Nil) {
+    def updated(evt: Evt): PackageState = copy(evt.data :: events)
     def size: Int = events.length
     override def toString: String = events.reverse.toString
     def lst: Pkg = events.head
 }
-case class RootState(events: List[List[ExamplePersistentActor]] = Nil){
+case class RootState(events: List[List[PersistentPackage]] = Nil){
     def updated(evt: EvtR): RootState = copy(evt.data :: events)
-    def lst: List[ExamplePersistentActor] = events.last
+    def lst: List[PersistentPackage] = events.last
 }
 // ---------------------------------------------
 // ---------------------- actors ---------------
-class ExamplePersistentActor() extends PersistentActor {
+class PersistentPackage() extends PersistentActor {
     override def persistenceId = "PKG_001v1"
 
-    var state = ExampleState()
+    var state = PackageState()
     var pkgId: String = ""
 
     def updateState(event: Evt): Unit =
@@ -47,7 +47,7 @@ class ExamplePersistentActor() extends PersistentActor {
 
     val receiveRecover: Receive = {
         case evt: Evt                                 => updateState(evt)
-        case SnapshotOffer(_, snapshot: ExampleState) => state = snapshot
+        case SnapshotOffer(_, snapshot: PackageState) => state = snapshot
     }
 
     val receiveCommand: Receive = {
@@ -88,7 +88,7 @@ object MainApp extends App {
 
     val system = ActorSystem("example")
 
-    val persistentActor = system.actorOf(Props[ExamplePersistentActor], "persistentActor-4-scala")
+    val persistentActor = system.actorOf(Props[PersistentPackage], "persistentActor-4-scala")
     //val persistentActor2 = system.actorOf(Props[ExamplePersistentActor], "actor-2")
 
     persistentActor ! PkgSetName("001")

@@ -8,7 +8,7 @@ import webs.MainApp.system
 // Server definition
 object WebServer extends HttpApp with EventMarshaller {
     val system = ActorSystem("example")
-    val persistentActor = system.actorOf(Props[ExamplePersistentActor], "persistentActor-4-scala")
+    val persistentActor = system.actorOf(Props[PersistentPackage], "persistentActor-4-scala")
     def getInfo():String = "dfj lkj " // {persistentActor ! "print"} = "lklkjlklkj"
     def excCmd(cmd: String) = persistentActor ! PkgSetName(cmd)
     override def routes: Route =
