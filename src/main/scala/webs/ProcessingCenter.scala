@@ -17,7 +17,8 @@ class ProcessingCenter extends Actor{
                 sender() ! ParcelCreated(Parcel(id, Init))      // response message
                 println(s"Created parcel = $id")
             }
-            context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
+            //context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
+            context.child(id)(create())
         case GetParcel(id) =>
             def notFound() = sender() ! None
             def getParcel(child: ActorRef) = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus

@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, ResponseEntity, Statu
 import akka.http.scaladsl.server.{HttpApp, Route}
 import webs.MainApp.system
 // Server definition
-object WebServer extends HttpApp with EventMarshaller {
+object WebServer extends HttpApp with PkgMarshaller {
     val system = ActorSystem("example")
     val persistentActor = system.actorOf(Props[PersistentPackage], "persistentActor-4-scala")
     def getInfo():String = "dfj lkj " // {persistentActor ! "print"} = "lklkjlklkj"
