@@ -2,6 +2,7 @@ package webs
 
 import akka.actor.{ActorSystem, Props}
 import akka.persistence._
+import webs.ParcelActorMsgs.GetStatus
 import webs.ProcessingCenterMsgs.{GetParcel, NewParcel}
 import webs.typedefs.Pkg
 //import webs.WebServer
@@ -87,16 +88,19 @@ class RootActor() extends PersistentActor{
 object MainApp extends App {
     //WebServer.startServer("localhost", port = 8080)
 
-    val system = ActorSystem("example")
-    val mmmactor = system.actorOf(ProcessingCenterMsgs.props)
-    mmmactor ! NewParcel("001_One")
+    val system = ActorSystem("PRCFactory")
+    //val mmmactor = system.actorOf(ProcessingCenterMsgs.props, "PRcenter")
+    val zzzactor = system.actorOf(ParcelActorMsgs.props("333"))
+    //mmmactor ! NewParcel("001_One")
+
     Thread.sleep(3000)
-    mmmactor ! GetParcel("002")
-    mmmactor ! GetParcel("001_One")
+    //mmmactor ! GetParcel("002")
+    //mmmactor ! GetParcel("001_One")
+    zzzactor ! GetStatus
     Some
     println("stop ----")
 
-    Thread.sleep(10000)
+    Thread.sleep(20000)
     system.terminate()
 
 

@@ -21,6 +21,7 @@ class ProcessingCenter extends Actor{
         case GetParcel(id) =>
             def notFound() = sender() ! None
             def getParcel(child: ActorRef) = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
+            println(s"GETPARCEL for $id")
             context.child(id).fold(notFound())(getParcel)
     }
 }
