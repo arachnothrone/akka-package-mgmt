@@ -1,6 +1,7 @@
 package webs
 
 import akka.actor.{Actor, ActorSystem, Props}
+import webs.ProcessingCenterMsgs.Parcel
 
 // import webs.typedefs.Pkg
 
@@ -14,7 +15,7 @@ class ParcelActor(prcId: String) extends Actor {
     def receive: PartialFunction[Any, Unit] = {
         case UpdateStatus(nstatus) => state = nstatus
         case AddDescription(id) => description = id
-        case GetStatus => sender() ! Some       // <----------------------------
+        case GetStatus => sender() ! Some(ProcessingCenterMsgs.Parcel(prcId, state))     //Some       // <----------------------------
     }
 
 }

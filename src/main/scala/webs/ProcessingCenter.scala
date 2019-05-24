@@ -1,7 +1,7 @@
 package webs
 
 import akka.actor.{Actor, ActorRef, Props}
-import webs.ProcessingCenterMsgs.NewParcel
+import webs.ProcessingCenterMsgs.{GetParcel, NewParcel, Parcel, ParcelCreated, ParcelIdExists}
 
 class ProcessingCenter extends Actor{
     // Parcel
@@ -10,7 +10,18 @@ class ProcessingCenter extends Actor{
     }
 
     def receive: PartialFunction[Any, Unit] = {
-        case NewParcel(id) => Some(id)          // <-------------------------------
+        case NewParcel(id) => //Some(id)          // <-------------------------------
+            def create(): Unit = {
+                val parcel = createParcel(id)                   // create a parcel with id
+                parcel ! ParcelActorMsgs.AddDescription("new parcel")
+                sender() ! ParcelCreated(Parcel(id, Init))      // response message
+                println(s"Created parcel = $id")
+            }
+            context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
+        case GetParcel(id) =>
+            def notFound() = sender() ! None
+            def getParcel(child: ActorRef) = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
+            context.child(id).fold(notFound())(getParcel)
     }
 }
 
