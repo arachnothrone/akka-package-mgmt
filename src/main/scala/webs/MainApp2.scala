@@ -26,7 +26,7 @@ object MainApp2 extends App {
     //val api = new ApplicationApi(system, requestTimeout("10")).routes
     val api = new ApplicationApi(system).routes
     val bindingFuture: Future[ServerBinding] = Http().bindAndHandle(api, "0.0.0.0", 9090 )
-    
+
 
 }
 

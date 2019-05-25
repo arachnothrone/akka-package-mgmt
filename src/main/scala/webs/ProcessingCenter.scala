@@ -50,9 +50,9 @@ class ProcessingCenter extends Actor{
 
         case UpdateParcel(id, state) =>
             def notFound(): Unit = sender() ! None
-            def updateParcel(child: ActorRef, st: String): Unit = child forward ParcelActorMsgs.UpdateStatus(st)
-            //context.child(id).fold(notFound())(updateParcel(state))
-            context.child(id)
+            def updateParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.UpdateStatus(state)
+            context.child(id).fold(notFound())(updateParcel)
+            //context.child(id)(updateParcel)
     }
 }
 
@@ -62,11 +62,11 @@ object ProcessingCenterMsgs {
     case class NewParcel(id: String)                    // creating a new parcel message
     case class GetParcel(id: String)                    // requesting specific parcel message
     case object GetParcels                              // requesting all available parcels message
-    case class UpdateParcel(id: String, state: String)
+    case class UpdateParcel(id: String, state: String)  // updating parcel's state message
 
     //case class Parcel(id: String, st: PkgStatus)      // parcel description message
     case class Parcel(id: String, state: String)        // parcel description message
-    case class Parcels(parcels: Vector[Parcel])         // message with a list of parcels
+    case class Parcels(parcels: Vector[Parcel])         // message with list of parcels
 
     sealed trait NewParcelResponse                      // response message for NewParcel message
     case class ParcelCreated(prcId: Parcel) extends NewParcelResponse

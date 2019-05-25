@@ -15,7 +15,9 @@ class ParcelActor(prcId: String) extends Actor {
     var description: String = ""
 
     def receive: PartialFunction[Any, Unit] = {
-        case UpdateStatus(nstatus) => state = nstatus
+        case UpdateStatus(nstatus) =>
+            state = nstatus
+            sender() ! Some(Parcel(prcId, state))
         case AddDescription(id) => description = id
         case GetStatus => sender() ! Some(ProcessingCenterMsgs.Parcel(prcId, state))     //Some       // <----------------------------
     }
