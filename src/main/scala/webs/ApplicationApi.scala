@@ -67,11 +67,10 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
 //            }
 //        }
 //    }
-
+    // get packageprocessing/package_info/001_FromFinland
     protected val getParcelRoute: Route = {
         pathPrefix(service / "package_info" / Segment) { parcel =>
             get {
-                // GET show-tix/v1/parcel/:parcel
                 pathEndOrSingleSlash {
                     onSuccess(getParcel(parcel)) {
                         _.fold(complete(NotFound))(e ⇒ complete(OK, e))
