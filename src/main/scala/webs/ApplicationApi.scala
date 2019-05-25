@@ -69,7 +69,7 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
 //    }
 
     protected val getParcelRoute: Route = {
-        pathPrefix(service / "package_info" / Segment) { parcel ⇒
+        pathPrefix(service / "package_info" / Segment) { parcel =>
             get {
                 // GET show-tix/v1/parcel/:parcel
                 pathEndOrSingleSlash {
@@ -81,9 +81,21 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
         }
     }
 
-    
+    protected val setParcelStatusRoute: Route = {
+        pathPrefix(service / "update_package_status" / Segment) {parcel =>
+            post {
+                pathEndOrSingleSlash {
+                    entity(as[ParcelDescription]) {p_st =>
+                        onSuccess(updateParcel(parcel, p_st.state)) { state =>
+                            complete(Created, state)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    val routes: Route = newParcelRoute ~ getParcelRoute // ~ getAllParcelsRoute
+    val routes: Route = newParcelRoute ~ getParcelRoute ~ setParcelStatusRoute // ~ getAllParcelsRoute
 }
 
 trait ProcessingCenterApi {

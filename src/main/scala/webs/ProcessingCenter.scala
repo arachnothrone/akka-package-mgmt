@@ -34,7 +34,8 @@ class ProcessingCenter extends Actor{
             def notFound(): Unit = sender() ! None
             def getParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
             //println(s"GETPARCEL for $id")
-            context.child(id).fold(notFound())(getParcel)
+            //context.child(id).fold(notFound())(getParcel)
+            context.child(id).fold()(getParcel)
 
         case GetParcels =>
             def getParcels = {
@@ -49,8 +50,9 @@ class ProcessingCenter extends Actor{
 
         case UpdateParcel(id, state) =>
             def notFound(): Unit = sender() ! None
-            def updateParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.UpdateStatus(state)
-            context.child(id).fold(notFound())(updateParcel)
+            def updateParcel(child: ActorRef, st: String): Unit = child forward ParcelActorMsgs.UpdateStatus(st)
+            //context.child(id).fold(notFound())(updateParcel(state))
+            context.child(id)
     }
 }
 
