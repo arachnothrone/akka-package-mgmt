@@ -26,15 +26,14 @@ object MainApp2 extends App {
     //val api = new ApplicationApi(system, requestTimeout("10")).routes
     val api = new ApplicationApi(system).routes
     val bindingFuture: Future[ServerBinding] = Http().bindAndHandle(api, "0.0.0.0", 9090 )
-
-    //val log = Logging(system.eventStream, "package_center")
+    
 
 }
 
-trait RequestTimeout {
-    import scala.concurrent.duration._
-    def requestTimeout(tout: String): Timeout = {
-        val d = Duration(tout)
-        FiniteDuration(d.length, d.unit)
-    }
-}
+//trait RequestTimeout {
+//    import scala.concurrent.duration._
+//    def requestTimeout(tout: String): Timeout = {
+//        val d = Duration(tout)
+//        FiniteDuration(d.length, d.unit)
+//    }
+//}
