@@ -1,9 +1,17 @@
 package webs
 
 import akka.actor.{Actor, ActorRef, Props}
-import webs.ProcessingCenterMsgs.{GetParcel, NewParcel, Parcel, ParcelCreated, ParcelIdExists}
+import akka.util.Timeout
+import webs.ProcessingCenterMsgs.{GetParcel, GetParcels, NewParcel, Parcel, ParcelCreated, ParcelIdExists, Parcels}
+import akka.pattern.{ask, pipe}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
+//class ProcessingCenter(implicit timeout: Timeout) extends Actor{
 class ProcessingCenter extends Actor{
+    //import webs.ProcessingCenterMsgs
+    import scala.concurrent.duration._
+    implicit val requestTimeout: Timeout = FiniteDuration(3, SECONDS)
     // Parcel
     def createParcel(prcId: String): ActorRef = {
         context.actorOf(ParcelActorMsgs.props(prcId), prcId)
@@ -13,28 +21,45 @@ class ProcessingCenter extends Actor{
         case NewParcel(id) => //Some(id)          // <-------------------------------
             def create(): Unit = {
                 val parcel = createParcel(id)                   // create a parcel with id
-                parcel ! ParcelActorMsgs.AddDescription("new parcel")
-                sender() ! ParcelCreated(Parcel(id, Init))      // response message
+                //parcel ! ParcelActorMsgs.AddDescription("new parcel")
+                //sender() ! ParcelCreated(Parcel(id, Init))      // response message
+                sender() ! ParcelCreated(Parcel(id, "Init"))      // response message
                 println(s"Created parcel = $id")
             }
-            //context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
-            context.child(id)(create())
+            context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
+            //context.child(id)//(create())
+
         case GetParcel(id) =>
-            def notFound() = sender() ! None
-            def getParcel(child: ActorRef) = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
-            println(s"GETPARCEL for $id")
+            def notFound(): Unit = sender() ! None
+            def getParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
+            //println(s"GETPARCEL for $id")
             context.child(id).fold(notFound())(getParcel)
+
+        case GetParcels =>
+            def getParcels = {
+                context.children.map { child =>
+                    self.ask(GetParcel(child.path.name)).mapTo[Option[Parcel]]
+                }
+            }
+            def convertToParcels(f: Future[Iterable[Option[Parcel]]]): Future[Parcels] = {
+                f.map(_.flatten).map(l => Parcels(l.toVector))
+            }
+            pipe(convertToParcels(Future.sequence(getParcels))) to sender()
     }
 }
 
 object ProcessingCenterMsgs {
+    //def props(implicit timeout: Timeout) = Props(new ProcessingCenter)
     def props = Props(new ProcessingCenter)
+    case class NewParcel(id: String)                    // creating a new parcel message
+    case class GetParcel(id: String)                    // requesting specific parcel message
+    case object GetParcels                              // requesting all available parcels message
 
-    case class NewParcel(id: String)
-    case class GetParcel(id: String)
+    //case class Parcel(id: String, st: PkgStatus)      // parcel description message
+    case class Parcel(id: String, state: String)        // parcel description message
+    case class Parcels(parcels: Vector[Parcel])         // message with a list of parcels
 
-    case class Parcel(id: String, state: PkgStatus)     // parcel description message
-    sealed trait NewParcelResponse      // response message for NewParcel message
-    case class ParcelCreated(prc: Parcel) extends NewParcelResponse
+    sealed trait NewParcelResponse                      // response message for NewParcel message
+    case class ParcelCreated(prcId: Parcel) extends NewParcelResponse
     case object ParcelIdExists extends NewParcelResponse
 }
