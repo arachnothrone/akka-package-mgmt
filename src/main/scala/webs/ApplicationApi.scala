@@ -37,11 +37,10 @@ class ApplicationApi(system: ActorSystem) extends RestApiRoutes {
 }
 
 trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
-    // Create parcel endpoint
-    val service = "parcel"
-    val version = "v1"
+    // Create parcel endpoint (packageprocessing/add_package/001_FromFinland
+    val service = "packageprocessing"
     protected val newParcelRoute: Route = {
-        pathPrefix(service / version / "parcels" / Segment) { pid =>
+        pathPrefix(service / "add_package" / Segment) { pid =>
             post {
                 pathEndOrSingleSlash {
                     entity(as[ParcelDescription]) { p_descr =>
@@ -58,7 +57,7 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
     }
 
 //    protected val getAllParcelsRoute: Route = {
-//        pathPrefix( service / version / "allparcels") {
+//        pathPrefix( service / "allparcels") {
 //            get {
 //                pathEndOrSingleSlash {
 //                    onSuccess(getAvailableParcels()) {parcels =>
@@ -70,7 +69,7 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
 //    }
 
     protected val getParcelRoute: Route = {
-        pathPrefix(service / version / "parcel" / Segment) { parcel ⇒
+        pathPrefix(service / "package_info" / Segment) { parcel ⇒
             get {
                 // GET show-tix/v1/parcel/:parcel
                 pathEndOrSingleSlash {
@@ -81,6 +80,8 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
             }
         }
     }
+
+    
 
     val routes: Route = newParcelRoute ~ getParcelRoute // ~ getAllParcelsRoute
 }
@@ -100,4 +101,5 @@ trait ProcessingCenterApi {
 
     def getAvailableParcels(): Future[Parcels] = processingCenter.ask(GetParcels).mapTo[Parcels]
     def getParcel(id: String): Future[Option[Parcel]] = processingCenter.ask(GetParcel(id)).mapTo[Option[Parcel]]
+    def updateParcel(id: String, state: String): Future[Option[Parcel]] = processingCenter.ask(UpdateParcel(id, state)).mapTo[Option[Parcel]]
 }

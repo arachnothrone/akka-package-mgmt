@@ -2,8 +2,9 @@ package webs
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
-import webs.ProcessingCenterMsgs.{GetParcel, GetParcels, NewParcel, Parcel, ParcelCreated, ParcelIdExists, Parcels}
+import webs.ProcessingCenterMsgs.{GetParcel, GetParcels, NewParcel, Parcel, ParcelCreated, ParcelIdExists, Parcels, UpdateParcel}
 import akka.pattern.{ask, pipe}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -45,6 +46,11 @@ class ProcessingCenter extends Actor{
                 f.map(_.flatten).map(l => Parcels(l.toVector))
             }
             pipe(convertToParcels(Future.sequence(getParcels))) to sender()
+
+        case UpdateParcel(id, state) =>
+            def notFound(): Unit = sender() ! None
+            def updateParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.UpdateStatus(state)
+            context.child(id).fold(notFound())(updateParcel)
     }
 }
 
@@ -54,6 +60,7 @@ object ProcessingCenterMsgs {
     case class NewParcel(id: String)                    // creating a new parcel message
     case class GetParcel(id: String)                    // requesting specific parcel message
     case object GetParcels                              // requesting all available parcels message
+    case class UpdateParcel(id: String, state: String)
 
     //case class Parcel(id: String, st: PkgStatus)      // parcel description message
     case class Parcel(id: String, state: String)        // parcel description message
