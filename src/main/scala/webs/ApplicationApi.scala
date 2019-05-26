@@ -1,17 +1,5 @@
 package webs
 
-//import akka.actor.{ActorRef, ActorSystem}
-//import webs.ProcessingCenterMsgs.{GetParcel, NewParcel, NewParcelResponse, Parcel}
-//import akka.pattern.ask
-//import akka.util.Timeout
-//import akka.http.scaladsl.server._
-//import akka.http.scaladsl.server.Directives._
-//import akka.http.scaladsl.model.StatusCodes
-//import StatusCodes._
-//import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-
-import java.util.concurrent.TimeUnit
-
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import akka.pattern.ask
@@ -19,25 +7,19 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import webs.ProcessingCenterMsgs._
-
-import scala.concurrent.duration.FiniteDuration
-//import com.showtix.messages._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import StatusCodes._
 
-
-//class ApplicationApi(system: ActorSystem, timeout: Timeout) extends RestApiRoutes {
 class ApplicationApi(system: ActorSystem) extends RestApiRoutes {
-    // implicit val requestTimeout: Timeout = timeout
     import scala.concurrent.duration._
-    implicit val requestTimeout: Timeout = FiniteDuration(3, SECONDS)  // TimeUnit
+    implicit val requestTimeout: Timeout = FiniteDuration(3, SECONDS)
     implicit def executionContext: ExecutionContextExecutor = system.dispatcher
 
     override def createProcCenter(): ActorRef = system.actorOf(ProcessingCenterMsgs.props)
 }
 
 trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
-    // Create parcel endpoint (packageprocessing/add_package/001_FromFinland
+    // Create parcel endpoint (packageprocessing/add_package/001_FromFinland, body json: {"state": "Init"}
     val service = "packageprocessing"
     protected val newParcelRoute: Route = {
         pathPrefix(service / "add_package" / Segment) { pid =>
@@ -67,7 +49,8 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
 //            }
 //        }
 //    }
-    // get packageprocessing/package_info/001_FromFinland
+
+    // GET packageprocessing/package_info/001_FromFinland
     protected val getParcelRoute: Route = {
         pathPrefix(service / "package_info" / Segment) { parcel =>
             get {
@@ -80,6 +63,7 @@ trait RestApiRoutes extends ProcessingCenterApi with PkgMarshaller{
         }
     }
 
+    // POST packageprocessing/update_package_status/001_FromFinland, body json: {"state": "Delivered"}
     protected val setParcelStatusRoute: Route = {
         pathPrefix(service / "update_package_status" / Segment) {parcel =>
             post {
@@ -110,7 +94,7 @@ trait ProcessingCenterApi {
         processingCenter.ask(NewParcel(id)).mapTo[NewParcelResponse]
     }
 
-    def getAvailableParcels(): Future[Parcels] = processingCenter.ask(GetParcels).mapTo[Parcels]
+    def getAvailableParcels: Future[Parcels] = processingCenter.ask(GetParcels).mapTo[Parcels]
     def getParcel(id: String): Future[Option[Parcel]] = processingCenter.ask(GetParcel(id)).mapTo[Option[Parcel]]
     def updateParcel(id: String, state: String): Future[Option[Parcel]] = processingCenter.ask(UpdateParcel(id, state)).mapTo[Option[Parcel]]
 }

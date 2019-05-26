@@ -4,10 +4,6 @@ import play.api.libs.json._
 import webs.ProcessingCenterMsgs._
 import de.heikoseeberger.akkahttpplayjson._
 
-//import play.api.libs.json._
-//import de.heikoseeberger.akkahttpplayjson._
-//import webs.ProcessingCenterMsgs.Parcel
-
 //case class ParcelDescription(st: PkgStatus)
 case class ParcelDescription(state: String) {
     require(state != "")

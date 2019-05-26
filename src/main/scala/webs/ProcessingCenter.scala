@@ -4,32 +4,33 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
 import webs.ProcessingCenterMsgs.{GetParcel, GetParcels, NewParcel, Parcel, ParcelCreated, ParcelIdExists, Parcels, UpdateParcel}
 import akka.pattern.{ask, pipe}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-//class ProcessingCenter(implicit timeout: Timeout) extends Actor{
 class ProcessingCenter extends Actor{
     //import webs.ProcessingCenterMsgs
     import scala.concurrent.duration._
     implicit val requestTimeout: Timeout = FiniteDuration(3, SECONDS)
+
     // Parcel
     def createParcel(prcId: String): ActorRef = {
         context.actorOf(ParcelActorMsgs.props(prcId), prcId)
     }
 
     def receive: PartialFunction[Any, Unit] = {
+        // Create new parcel (id, state)
         case NewParcel(id) => //Some(id)          // <-------------------------------
             def create(): Unit = {
-                val parcel = createParcel(id)                   // create a parcel with id
+                val parcel = createParcel(id)                       // create a parcel with id
                 //parcel ! ParcelActorMsgs.AddDescription("new parcel")
-                //sender() ! ParcelCreated(Parcel(id, Init))      // response message
-                sender() ! ParcelCreated(Parcel(id, "Init"))      // response message
+                //sender() ! ParcelCreated(Parcel(id, Init))        // response message
+                sender() ! ParcelCreated(Parcel(id, "Init"))        // response message, initial state hardcoded
                 println(s"Created parcel = $id")
             }
             context.child(id).fold(create())(_ => sender() ! ParcelIdExists)
             //context.child(id)//(create())
 
+        // Get parcel state
         case GetParcel(id) =>
             def notFound(): Unit = sender() ! None
             def getParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.GetStatus        // GetParcel => GetStatus
@@ -37,6 +38,7 @@ class ProcessingCenter extends Actor{
             //context.child(id).fold(notFound())(getParcel)
             context.child(id).fold()(getParcel)
 
+        // GetParcels doesn't work
         case GetParcels =>
             def getParcels = {
                 context.children.map { child =>
@@ -48,6 +50,7 @@ class ProcessingCenter extends Actor{
             }
             pipe(convertToParcels(Future.sequence(getParcels))) to sender()
 
+        // Update parcel state
         case UpdateParcel(id, state) =>
             def notFound(): Unit = sender() ! None
             def updateParcel(child: ActorRef): Unit = child forward ParcelActorMsgs.UpdateStatus(state)
@@ -57,7 +60,6 @@ class ProcessingCenter extends Actor{
 }
 
 object ProcessingCenterMsgs {
-    //def props(implicit timeout: Timeout) = Props(new ProcessingCenter)
     def props = Props(new ProcessingCenter)
     case class NewParcel(id: String)                    // creating a new parcel message
     case class GetParcel(id: String)                    // requesting specific parcel message
